@@ -1077,13 +1077,16 @@ namespace CM3D2.EditMenuFilter.Plugin
 				switch( PresetMgr.m_currentActiveFilterBtnName )
 				{
 					case PresetMgr.Filter.All:  // 服/体 cm3d2_edit_priset_kindicon_clothes_body
-						return spr.spriteName.Contains( "kindicon_clothes_body" );
+						return spr.spriteName.EndsWith( "kindicon_clothes_body" ) ||
+							spr.spriteName.EndsWith("kindicon_clothes_body_en");
 					
 					case PresetMgr.Filter.Wear: // 服    cm3d2_edit_priset_kindicon_clothes
-						return spr.spriteName.Contains( "kindicon_clothes" );
+						return spr.spriteName.EndsWith( "kindicon_clothes" ) ||
+							spr.spriteName.EndsWith("kindicon_clothes_en");
 					
 					case PresetMgr.Filter.Body: // 体    cm3d2_edit_priset_kindicon_body
-						return spr.spriteName.Contains( "kindicon_body" );
+						return spr.spriteName.EndsWith( "kindicon_body" ) ||
+							spr.spriteName.EndsWith("kindicon_body_en");
 				}
 			}
 			return false;
