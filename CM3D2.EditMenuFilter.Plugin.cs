@@ -876,12 +876,27 @@ namespace CM3D2.EditMenuFilter.Plugin
 												CompareOptions.IgnoreCase |
 												CompareOptions.IgnoreWidth |
 												CompareOptions.IgnoreKanaType );
+
 							bContains = (result >= 0);
+
+							if(!bContains && IsCom)
+                            {
+								result = info.IndexOf(mi.menuNameCurrentLanguage, str,
+									CompareOptions.IgnoreCase |
+									CompareOptions.IgnoreWidth |
+									CompareOptions.IgnoreKanaType);
+
+								bContains = (result >= 0);
+							}
 						}
 						else
 						{
 							// 単純に同じ文字列を含んでいるかどうか
 							bContains = mi.m_strMenuName.Contains( str );
+							if (!bContains && IsCom)
+							{
+								bContains = mi.menuNameCurrentLanguage.Contains(str);
+							}
 						}
 
 						// 説明もフィルターする場合
@@ -897,10 +912,22 @@ namespace CM3D2.EditMenuFilter.Plugin
 														CompareOptions.IgnoreWidth |
 														CompareOptions.IgnoreKanaType );
 									bContains = (result >= 0);
+									if(!bContains && IsCom)
+                                    {
+										result = info.IndexOf(mi.infoTextCurrentLanguage, str,
+											CompareOptions.IgnoreCase |
+											CompareOptions.IgnoreWidth |
+											CompareOptions.IgnoreKanaType);
+										bContains = (result >= 0);
+									}
 								}
 								else
 								{
 									bContains = mi.m_strInfo.Contains( str );
+									if (!bContains && IsCom)
+									{
+										bContains = mi.infoTextCurrentLanguage.Contains(str);
+									}
 								}
 							}
 						}
