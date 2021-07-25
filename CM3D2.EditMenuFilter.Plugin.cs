@@ -47,18 +47,7 @@ namespace CM3D2.EditMenuFilter.Plugin
 			VanillaHash = new Dictionary<int, bool>();
 
 			IsCom = Application.dataPath.Contains( "COM3D2" );
-			if ( IsCom )
-			{
-				// COMはパスを含まないアイテムがバニラかmodフォルダ直下のmod
-				var mods = _getModOnlysMenuFiles();
-				VanillaHash = GameUty.MenuFiles
-								.Where( s => !s.Contains( @"\" ) )
-								.Where( s => !mods.Contains( s ) )	// modをはじく
-								.Select( s => s.ToLower().GetHashCode() )
-								.GroupBy( h => h )
-								.ToDictionary( g => g.Key, g => true );
-			}
-			else
+			if ( !IsCom )
 			{
 				// CMはmenu\の後に\があるアイテムがバニラ
 				// "menu\dress\accanl\_i_accanl_del.menu" とか
@@ -147,6 +136,7 @@ namespace CM3D2.EditMenuFilter.Plugin
 					ItemFilterCtrl ctrl = filter.gameObject.AddComponent<ItemFilterCtrl>();
 					ctrl.FilterType = menuType;
 					ctrl.IsCom = isCom;
+					ctrl.gameObject.SetActive(true);
 					// 作成終了
 					return false;
 				}
@@ -852,9 +842,16 @@ namespace CM3D2.EditMenuFilter.Plugin
 				// メニューアイテムのタイプを調べる
 				ItemType type;
 
-				type = EditMenuFilter.Instance.VanillaHash.ContainsKey( mi.m_nMenuFileRID )
-						? ItemType.Vanilla
-						: ItemType.Mod;
+				if (this.IsCom)
+				{
+					type = (GameUty.FileSystemMod.IsExistentFile(mi.m_strMenuFileName) ? ItemFilterCtrl.ItemType.Mod : ItemFilterCtrl.ItemType.Vanilla);
+				}
+				else
+				{
+					type = EditMenuFilter.Instance.VanillaHash.ContainsKey(mi.m_nMenuFileRID)
+							? ItemType.Vanilla
+							: ItemType.Mod;
+				}
 
 				// COMでバニラの場合、互換かどうかも調べる
 				if ( IsCom && type.IsFlg( ItemType.Vanilla ) )
@@ -1080,13 +1077,13 @@ namespace CM3D2.EditMenuFilter.Plugin
 				switch( PresetMgr.m_currentActiveFilterBtnName )
 				{
 					case PresetMgr.Filter.All:  // 服/体 cm3d2_edit_priset_kindicon_clothes_body
-						return spr.spriteName.EndsWith( "kindicon_clothes_body" );
+						return spr.spriteName.Contains( "kindicon_clothes_body" );
 					
 					case PresetMgr.Filter.Wear: // 服    cm3d2_edit_priset_kindicon_clothes
-						return spr.spriteName.EndsWith( "kindicon_clothes" );
+						return spr.spriteName.Contains( "kindicon_clothes" );
 					
 					case PresetMgr.Filter.Body: // 体    cm3d2_edit_priset_kindicon_body
-						return spr.spriteName.EndsWith( "kindicon_body" );
+						return spr.spriteName.Contains( "kindicon_body" );
 				}
 			}
 			return false;
