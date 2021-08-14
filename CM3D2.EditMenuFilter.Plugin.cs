@@ -12,7 +12,7 @@ using UnityInjector.Attributes;
 namespace CM3D2.EditMenuFilter.Plugin
 {
 	[PluginName( "EditMenuFilter" )]
-	[PluginVersion( "1.4.0.0" )]
+	[PluginVersion( "1.4.1.0" )]
 
 	// 設定データクラス XMLでシリアライズして保存する
 	public class ConfigData
@@ -834,7 +834,7 @@ namespace CM3D2.EditMenuFilter.Plugin
 			// スペースで分割
 			string[] strAry = checkStr.Split( ' ' );
 
-			_menuItemAction( ( item, mi ) =>
+            _menuItemAction( ( item, mi ) =>
 			{
 				bool bContains = true;
 				CompareInfo info = CultureInfo.CurrentCulture.CompareInfo;
@@ -867,77 +867,31 @@ namespace CM3D2.EditMenuFilter.Plugin
 				if ( bContains )
 				{
 					foreach ( var str in strAry )
-					{
-						// 大文字小文字を無視するか
-						if ( Config.IgnoreCase )
+                    {
+						bContains = CheckFilename(mi, info, str);
+						
+						if (!bContains)
+                        {
+							// 大文字小文字を無視するか
+							bContains = CheckName(mi, info, str);
+						}
+
+						// 既に名前に含まれていたなら調べる必要はない
+						if (!bContains)
 						{
-							// 大文字小文字/ひらがなカタカナ/全角半角を区別せずに比較する
-							int result = info.IndexOf( mi.m_strMenuName, str,
-												CompareOptions.IgnoreCase |
-												CompareOptions.IgnoreWidth |
-												CompareOptions.IgnoreKanaType );
-
-							bContains = (result >= 0);
-
-							if(!bContains && IsCom)
+							// 説明もフィルターする場合
+							if (Config.FilterDesc)
                             {
-								result = info.IndexOf(mi.menuNameCurrentLanguage, str,
-									CompareOptions.IgnoreCase |
-									CompareOptions.IgnoreWidth |
-									CompareOptions.IgnoreKanaType);
+                                bContains = CheckDescription(mi, info, str);
+                            }
+                        }
 
-								bContains = (result >= 0);
-							}
-						}
-						else
-						{
-							// 単純に同じ文字列を含んでいるかどうか
-							bContains = mi.m_strMenuName.Contains( str );
-							if (!bContains && IsCom)
-							{
-								bContains = mi.menuNameCurrentLanguage.Contains(str);
-							}
-						}
-
-						// 説明もフィルターする場合
-						if ( Config.FilterDesc )
-						{
-							// 既に名前に含まれていたなら調べる必要はない
-							if ( !bContains )
-							{
-								if ( Config.IgnoreCase )
-								{
-									int result = info.IndexOf( mi.m_strInfo, str,
-														CompareOptions.IgnoreCase |
-														CompareOptions.IgnoreWidth |
-														CompareOptions.IgnoreKanaType );
-									bContains = (result >= 0);
-									if(!bContains && IsCom)
-                                    {
-										result = info.IndexOf(mi.infoTextCurrentLanguage, str,
-											CompareOptions.IgnoreCase |
-											CompareOptions.IgnoreWidth |
-											CompareOptions.IgnoreKanaType);
-										bContains = (result >= 0);
-									}
-								}
-								else
-								{
-									bContains = mi.m_strInfo.Contains( str );
-									if (!bContains && IsCom)
-									{
-										bContains = mi.infoTextCurrentLanguage.Contains(str);
-									}
-								}
-							}
-						}
-
-						// ANDの場合、1つでも含まれていなければ非アクティブにする
-						// ORの場合、1つでも含まれていればアクティブにする
-						if ( Config.IsAnd )	{ if ( !bContains ) { break; } }
-						else				{ if (  bContains ) { break; } }
-					}
-				}
+                        // ANDの場合、1つでも含まれていなければ非アクティブにする
+                        // ORの場合、1つでも含まれていればアクティブにする
+                        if (Config.IsAnd) { if (!bContains) { break; } }
+                        else { if (bContains) { break; } }
+                    }
+                }
 
 				// 含んでればアクティブ、含んでなければ非アクティブ
 				item.SetActive( bContains );
@@ -947,7 +901,91 @@ namespace CM3D2.EditMenuFilter.Plugin
 			m_bFilterd = true;
 		}
 
-		public void ShowMenu()
+		private bool CheckFilename(SceneEdit.SMenuItem mi, CompareInfo info, string str)
+		{
+			if (Config.IgnoreCase)
+			{
+				int result = info.IndexOf(mi.m_strMenuFileName, str,
+									CompareOptions.IgnoreCase |
+									CompareOptions.IgnoreWidth |
+									CompareOptions.IgnoreKanaType);
+				return (result >= 0);
+			}
+			else
+			{
+				return mi.m_strMenuFileName.Contains(str);
+			}
+		}
+
+
+		private bool CheckDescription(SceneEdit.SMenuItem mi, CompareInfo info, string str)
+        {
+            bool bContains;
+            if (Config.IgnoreCase)
+            {
+                int result = info.IndexOf(mi.m_strInfo, str,
+                                    CompareOptions.IgnoreCase |
+                                    CompareOptions.IgnoreWidth |
+                                    CompareOptions.IgnoreKanaType);
+                bContains = (result >= 0);
+                if (!bContains && IsCom)
+                {
+                    result = info.IndexOf(mi.infoTextCurrentLanguage, str,
+                        CompareOptions.IgnoreCase |
+                        CompareOptions.IgnoreWidth |
+                        CompareOptions.IgnoreKanaType);
+                    bContains = (result >= 0);
+                }
+            }
+            else
+            {
+                bContains = mi.m_strInfo.Contains(str);
+                if (!bContains && IsCom)
+                {
+                    bContains = mi.infoTextCurrentLanguage.Contains(str);
+                }
+            }
+
+            return bContains;
+        }
+
+        private bool CheckName(SceneEdit.SMenuItem mi, CompareInfo info, string str)
+        {
+            bool bContains;
+            if (Config.IgnoreCase)
+            {
+                // 大文字小文字/ひらがなカタカナ/全角半角を区別せずに比較する
+                int result = info.IndexOf(mi.m_strMenuName, str,
+                                    CompareOptions.IgnoreCase |
+                                    CompareOptions.IgnoreWidth |
+                                    CompareOptions.IgnoreKanaType);
+
+                bContains = (result >= 0);
+
+                if (!bContains && IsCom)
+                {
+                    result = info.IndexOf(mi.menuNameCurrentLanguage, str,
+                        CompareOptions.IgnoreCase |
+                        CompareOptions.IgnoreWidth |
+                        CompareOptions.IgnoreKanaType);
+
+                    bContains = (result >= 0);
+                }
+            }
+            else
+            {
+                // 単純に同じ文字列を含んでいるかどうか
+                bContains = mi.m_strMenuName.Contains(str);
+                if (!bContains && IsCom)
+                {
+                    bContains = mi.menuNameCurrentLanguage.Contains(str);
+                }
+            }
+
+            return bContains;
+        }
+
+        public void ShowMenu()
 		{
 			if ( m_bFilterd )
 			{
