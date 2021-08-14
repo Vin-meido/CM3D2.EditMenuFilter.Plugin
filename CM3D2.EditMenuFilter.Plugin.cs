@@ -12,7 +12,7 @@ using UnityInjector.Attributes;
 namespace CM3D2.EditMenuFilter.Plugin
 {
 	[PluginName( "EditMenuFilter" )]
-	[PluginVersion( "1.4.3.0" )]
+	[PluginVersion( "1.4.1.2" )]
 
 	// 設定データクラス XMLでシリアライズして保存する
 	public class ConfigData
