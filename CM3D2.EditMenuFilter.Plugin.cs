@@ -12,7 +12,7 @@ using UnityInjector.Attributes;
 namespace CM3D2.EditMenuFilter.Plugin
 {
 	[PluginName( "EditMenuFilter" )]
-	[PluginVersion( "1.4.1.0" )]
+	[PluginVersion( "1.4.3.0" )]
 
 	// 設定データクラス XMLでシリアライズして保存する
 	public class ConfigData
@@ -1011,7 +1011,7 @@ namespace CM3D2.EditMenuFilter.Plugin
 			{
 				Font font = GameObject.Find( "SystemUI Root" ).GetComponentsInChildren<UILabel>()[0].trueTypeFont;
 
-				_presetAction( null, true, ( item ) =>
+				_presetAction( null, false, ( item ) =>
 				{
 					UITexture tex = item.GetComponent<UITexture>();
 					if ( tex )
